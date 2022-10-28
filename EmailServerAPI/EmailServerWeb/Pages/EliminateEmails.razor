@@ -1,0 +1,169 @@
+﻿@inject EmailServerWeb.Data.IEmailServersServices emailservices;
+@using EmailServerAPI.Models;
+@using Microsoft.Office.Interop.Excel;
+@using System.Runtime.InteropServices;
+
+@page "/EliminateEmails"
+
+<PageTitle>Email eliminator</PageTitle>
+@if (allactive != null)
+{
+    <div class="wrapper container">
+        <h3>Client Server Editor</h3>
+
+        <div class="col-1"></div>
+        <table style="width: 900px;table-layout:fixed">
+            <thead>
+                <tr>
+                    <th width="250px" style="overflow: hidden">Name</th>
+                    <th width="250px" style="overflow: hidden">Email</th>
+                    <th width="250px">Server Name</th>
+                    <th width="150px">User</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in allactive)
+                {
+                    <tr @onclick="args => bbb(item.Id,args)" style="color: @listcolor(@item.Id)">
+                        <td width="250px" style="overflow: hidden;color: @listcolor(@item.Id)">@(GenName(item.Name))</td>
+                        <td width="250px" style="overflow: hidden;color: @listcolor(@item.Id)">@item.Email</td>
+                        <td width="250px" style="overflow: hidden;word-wrap: break-word;font-size: 9pt;color: @listcolor(@item.Id)">
+                            @extractserver(item.Email)
+                        </td>
+                        <td width="150px" style="word-wrap: break-word;font-size: 9pt;color: @listcolor(@item.Id)">
+                            @(
+                                item.User.ToUpper()
+                            )
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="footer">
+                <tr>
+                    <th width="250px" style="overflow: hidden"></th>
+                    <th width="250px"></th>
+                    <th width="150px" align="center"></th>
+                    <th width="250px"></th>
+                </tr>
+                <tr>
+                    <th style="text-align: left;">Total Servers: @SelectedForDelete.Count()</th>
+                    <th style="text-align: center;">Selected for deletion: @SelectedForDelete.Where(e => e.Value == true).Count()</th>
+                    <th style="text-align: right;"><button @onclick="@rundelete">Delete Now</button></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+
+@code
+{
+    protected ElementReference myTable;
+    protected ElementReference defer;
+    public Dictionary<int, bool>? SelectedForDelete = null;
+    public List<EmailServerAPI.Models.AutoEmail>? allactive = null;
+    public Dictionary<string, List<AutoEmail>>? allemail = null;
+    public async void rundelete()
+    {
+        var deleteables = SelectedForDelete
+            .Where(e => e.Value == true)
+            .ToList();
+        var mygold = await emailservices.DeleteEmails(deleteables.Join(allactive, deletes => deletes.Key, allactive => allactive.Id,
+            (deletes, emails) => new { deletes.Key, emails })
+            .Select(e => e.emails)
+            .ToList());
+        allactive = (await emailservices.GetEmails()).Join((await emailservices.GetAll()),
+            emails => extractserver(emails.Email),
+            server => server.ServerName,
+            (emails, servers) => new { servers.ServerName, emails })
+            .OrderBy(e => e.ServerName)
+            .ThenBy(e => e.emails.Email)
+            .Select(e => e.emails)
+            .ToList();
+        SelectedForDelete.Clear();
+        foreach (var item in allactive)
+        {
+            SelectedForDelete.Add(item.Id, false);
+        }
+        StateHasChanged();
+    }
+    private string GenName(string iname)
+    {
+        // if the name is an email address it really isnt a name
+        iname = iname.Replace("'", "");
+        if (iname.Split("@").Length == 2)
+        {
+            return "";
+        }
+        // if the name has a comma in it, it is probably last, first
+        if (iname.Split(",").Length > 1)
+        {
+            var lastname = iname.Split(",")[0].Trim();
+            var firstname = iname.Substring(iname.Split(",")[0].Length + 1).Trim();
+            return firstname + " " + lastname;
+        }
+        else
+        {
+            return iname.Trim();
+        }
+    }
+    private string formatdate(DateTime? dt)
+    {
+        if (dt == null)
+        {
+            return "";
+        }
+        else
+        {
+            return string.Format("{0:MMM dd, yyyy hh:mm tt}", dt);
+        }
+    }
+    public string listcolor(int Id)
+    {
+        if (SelectedForDelete[Id])
+        {
+            return "blue";
+        }
+        else
+        {
+            return "darkgray";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var selectedemails = (await emailservices.GetEmails());
+        var selectedservers = await emailservices.GetAll();
+        allactive = selectedemails.Join(selectedservers,
+            emails => extractserver(emails.Email), 
+            server => server.ServerName,
+            (emails, servers) => new { servers.ServerName, emails })
+            .OrderBy(e => e.ServerName)
+            .ThenBy(e => e.emails.Email)
+            .Select(e => e.emails)
+            .ToList();
+        SelectedForDelete = new();
+        foreach (var item in allactive)
+        {
+            SelectedForDelete.Add(item.Id, false);
+        }
+
+    }
+    private string extractserver(string email)
+    {
+        var sections = email.ToUpper().Split("@");
+        if (sections.Length == 2)
+        {
+            return sections[1];
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public void bbb(int Id, MouseEventArgs args)
+    {
+        SelectedForDelete[Id] = !SelectedForDelete[Id];
+        StateHasChanged();
+    }
+}

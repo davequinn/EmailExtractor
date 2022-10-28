@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace EmailExtractor.Models
+namespace EmailServerAPI.Models
 {
     public partial class pPrismMasterContext : DbContext
     {
@@ -17,14 +17,9 @@ namespace EmailExtractor.Models
             : base(options)
         {
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-        {
-            if (options.IsConfigured == false)
-                options.UseSqlServer(@"Data Source=72.143.59.219;Initial Catalog=pPrismMaster;Persist Security Info=True;User ID=sa;Password=Mine1mine");
-        }
+
         public virtual DbSet<AutoEmail> AutoEmail { get; set; }
         public virtual DbSet<AutoEmailServers> AutoEmailServers { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,0 +1,183 @@
+﻿@inject EmailServerWeb.Data.IEmailServersServices emailservices;
+@using EmailServerAPI.Models;
+@using Microsoft.Office.Interop.Excel;
+@using System.Runtime.InteropServices;
+
+@page "/EliminateServers"
+
+<PageTitle>Client Server Editor</PageTitle>
+@if (allactiveservers != null)
+{
+    <div class="wrapper container">
+        <h3>Client Server Editor</h3>
+
+        <div class="col-1"></div>
+        <table style="width: 900px;table-layout:fixed">
+            <thead>
+                <tr>
+                    <th width="250px" style="overflow: hidden">Server Name</th>
+                    <th width="250px">Email Addresses</th>
+                    <th width="150px" align="center">Employee</th>
+                    <th width="250px">Names</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in allactiveservers)
+                {
+                    <tr @onclick="args => bbb(item.Id,args)" style="color: @listcolor(@item.Id)">
+                        <td width="100px" style="overflow: hidden;color: @listcolor(@item.Id)">@item.ServerName</td>
+                        <td width="250px" style="overflow: hidden;word-wrap: break-word;font-size: 9pt;color: @listcolor(@item.Id)">
+                            @getemails(item.Id)
+                        </td>
+                        <td width="150px" align="center" style="justify-content: center;color: @listcolor(@item.Id)">@item.EmployeesOutlook</td>
+                        <td width="250px" style="word-wrap: break-word;font-size: 9pt;color: @listcolor(@item.Id)">
+                            @getnames(item.Id)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="footer">
+                <tr>
+                    <th width="250px" style="overflow: hidden"></th>
+                    <th width="250px"></th>
+                    <th width="150px" align="center"></th>
+                    <th width="250px"></th>
+                </tr>
+                <tr>
+                    <th style="text-align: left;">Total Servers: @SelectedForDelete.Count()</th>
+                    <th style="text-align: center;">Selected for deletion: @SelectedForDelete.Where(e => e.Value == true).Count()</th>
+                    <th style="text-align: right;"><button @onclick="@rundelete">Delete Now</button></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+
+@code
+{
+    protected ElementReference myTable;
+    protected ElementReference defer;
+    public Dictionary<int, bool>? SelectedForDelete = null;
+    public List<EmailServerAPI.Models.AutoEmailServers>? allactiveservers = null;
+    public Dictionary<string, List<AutoEmail>>? allemail = null;
+    public async void rundelete()
+    {
+        var deleteableservers = SelectedForDelete
+            .Where(e => e.Value == true)
+            .ToList();
+        var sxn = from item in deleteableservers
+                  join servers in allactiveservers
+                  on item.Key equals servers.Id
+                  select servers;
+        await emailservices.DeleteServer(sxn.ToList());
+        allactiveservers = (List<EmailServerAPI.Models.AutoEmailServers>)await emailservices.GetAll();
+        allemail = (await emailservices.GetEmails())
+        .Where(e => e.Email.Split("@").Length == 2)
+        .Select(e => new { key = e.Email.Split("@")[1].ToUpper(), emaillist = e })
+        .GroupBy(e => e.key)
+        .ToDictionary(e => e.Key, e => (List<AutoEmail>)e.Select(f => f.emaillist).ToList());
+        SelectedForDelete = new();
+        foreach (var item in allactiveservers)
+        {
+            SelectedForDelete.Add(item.Id, false);
+        }
+        StateHasChanged();
+    }
+    public string getemails(int Id)
+    {
+        var em = emails(Id);
+        string ret = "";
+        if (em.Count > 1)
+        {
+            for (int i = 0; i < em.Count - 2; i++)
+            {
+                ret += em[i].Email + ", ";
+            }
+        }
+        ret += em.Last().Email;
+        return ret;
+    }
+    public string getnames(int Id)
+    {
+        var em = emails(Id);
+        string ret = "";
+        if (em.Count > 1)
+        {
+            for (int i = 0; i < em.Count - 2; i++)
+            {
+                ret += em[i].Name + ", ";
+            }
+        }
+        ret += em.Last().Name;
+        return ret;
+    }
+    public string listcolor(int Id)
+    {
+        if (SelectedForDelete[Id])
+        {
+            return "blue";
+        }
+        else
+        {
+            return "darkgray";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        excelit();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+
+
+        allactiveservers = (List<EmailServerAPI.Models.AutoEmailServers>)await emailservices.GetAll();
+        allemail = (await emailservices.GetEmails())
+        .Where(e => e.Email.Split("@").Length == 2)
+        .Select(e => new { key = e.Email.Split("@")[1].ToUpper(), emaillist = e })
+        .GroupBy(e => e.key)
+        .ToDictionary(e => e.Key, e => (List<AutoEmail>)e.Select(f => f.emaillist).ToList());
+        SelectedForDelete = new();
+        foreach (var item in allactiveservers)
+        {
+            SelectedForDelete.Add(item.Id, false);
+        }
+
+    }
+
+    void excelit()
+    {
+        var excelApplication = new Application() { Visible = false };
+        var workbooks = excelApplication.Workbooks;
+        var workbook = workbooks.Open(@"c:\users\daveq\documents\Momsgift.xlsx"); // Fixed
+        workbook.Close();
+        workbooks.Close();
+        excelApplication.Quit();
+        workbook = null;
+        excelApplication = null;
+        workbooks = null;
+        //Marshal.ReleaseComObject(workbook);
+        //Marshal.ReleaseComObject(workbooks);
+        //Marshal.ReleaseComObject(excelApplication);
+    }
+
+
+    public List<AutoEmail>? emails(int Id)
+    {
+
+        var cane = allemail[allactiveservers.Where(e => e.Id == Id).First().ServerName]
+        //.ToList()
+        //.DistinctBy(e => e.Name)
+        .ToList();
+
+        return cane;
+    }
+
+    public void bbb(int Id, MouseEventArgs args)
+    {
+        SelectedForDelete[Id] = !SelectedForDelete[Id];
+        StateHasChanged();
+    }
+}

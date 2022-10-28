@@ -1,0 +1,33 @@
+﻿* {
+    margin: 0;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+.wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -100px;
+}
+td {
+    vertical-align: middle !important;
+}
+.footer,
+.push {
+    position: fixed;
+    align-content: center;
+    text-align:center;
+    vertical-align:middle;
+    bottom: 0;
+}
+
+.footer {
+    background-color: #318ccc;
+    color: lightgray;
+    align-content: center;
+    vertical-align: middle;
+}

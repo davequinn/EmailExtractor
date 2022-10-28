@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailExtractor", "EmailExtr
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "EmailExtractorSetup", "EmailExtractorSetup\EmailExtractorSetup.vdproj", "{A94BC756-0F3E-4AD5-9973-C6EF8C124C45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerExtractor", "ServerExtractor\ServerExtractor.csproj", "{FBFE87DD-A321-4B80-91B9-1FFE5A231221}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerExtractor", "ServerExtractor\ServerExtractor.csproj", "{FBFE87DD-A321-4B80-91B9-1FFE5A231221}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

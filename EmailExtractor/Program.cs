@@ -26,11 +26,12 @@ if (initials != null)
     initials = initials.ToUpper().PadRight(2).Substring(0, 2);
     using (var context = new pPrismMasterContext())
     {
-        var xx = await context.Procedures.EmailDeleterAsync("DQ");
+        var xx = await context.Procedures.EmailDeleterAsync(initials);
     }
 }
 else
 {
+    initials = "DQ";
     using (var context = new pPrismMasterContext())
     {
         var xx = await context.Procedures.EmailDeleterAsync("DQ");
@@ -104,7 +105,6 @@ foreach (var folder in mf)
             throw;
         }
     }
-    app.Quit();
 }
 
 //Items oitems = inboxFolder.Items;
@@ -170,6 +170,7 @@ using (var context = new pPrismMasterContext())
     }
     context.SaveChanges();
 }
+app.Quit();
 
 
 return;

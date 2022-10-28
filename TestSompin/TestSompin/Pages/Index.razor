@@ -1,0 +1,49 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+
+<EditForm Model="ev">
+    @for (int ii = 0; ii < 4; ii++)
+    {
+        int halfart = ii;
+        <InputCheckbox Value="ev.ElementAt(halfart).Selected"
+                   ValueExpression="@(()=>ev.ElementAt(halfart).Selected)"
+                   ValueChanged="@(()=>{ ev.ElementAt(halfart).Change();})">
+            
+        </InputCheckbox>
+        <span style="padding-left: 2px">My CheckBox @halfart!</span>
+        <br>
+    }
+</EditForm>
+
+
+@code
+{
+    List<bear> ev;
+
+    class bear
+    {
+        public bool Selected { get; set; } = true;
+        public void Change()
+        {
+            Selected = !Selected;
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        ev = new();
+        ev.Add(new());
+        ev.Add(new());
+        ev.Add(new());
+        ev.Add(new());
+        ev.Add(new());
+    }
+
+}
