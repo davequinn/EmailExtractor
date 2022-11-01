@@ -1,4 +1,5 @@
 ﻿@inject EmailServerWeb.Data.IEmailServersServices emailservices;
+@inject Microsoft.AspNetCore.Components.NavigationManager navigationManager
 @using EmailServerAPI.Models;
 @using Microsoft.Office.Interop.Excel;
 @using System.Runtime.InteropServices;
@@ -125,14 +126,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        excelit();
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-
-
-
+        navigationManager.NavigateTo("EmailServerWeb/EliminateEmails");
         allactiveservers = (List<EmailServerAPI.Models.AutoEmailServers>)await emailservices.GetAll();
         allemail = (await emailservices.GetEmails())
         .Where(e => e.Email.Split("@").Length == 2)
@@ -146,23 +140,6 @@
         }
 
     }
-
-    void excelit()
-    {
-        var excelApplication = new Application() { Visible = false };
-        var workbooks = excelApplication.Workbooks;
-        var workbook = workbooks.Open(@"c:\users\daveq\documents\Momsgift.xlsx"); // Fixed
-        workbook.Close();
-        workbooks.Close();
-        excelApplication.Quit();
-        workbook = null;
-        excelApplication = null;
-        workbooks = null;
-        //Marshal.ReleaseComObject(workbook);
-        //Marshal.ReleaseComObject(workbooks);
-        //Marshal.ReleaseComObject(excelApplication);
-    }
-
 
     public List<AutoEmail>? emails(int Id)
     {

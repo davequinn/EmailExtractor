@@ -16,7 +16,7 @@
             <thead>
                 <tr>
                     <th width="250px" style="overflow: hidden">Name</th>
-                    <th width="250px" style="overflow: hidden">Email</th>
+                    <th width="350px" style="overflow: hidden">Email</th>
                     <th width="250px">Server Name</th>
                     <th width="150px">User</th>
                 </tr>
@@ -26,7 +26,7 @@
                 {
                     <tr @onclick="args => bbb(item.Id,args)" style="color: @listcolor(@item.Id)">
                         <td width="250px" style="overflow: hidden;color: @listcolor(@item.Id)">@(GenName(item.Name))</td>
-                        <td width="250px" style="overflow: hidden;color: @listcolor(@item.Id)">@item.Email</td>
+                        <td width="350px" style="overflow: hidden;color: @listcolor(@item.Id)">@item.Email</td>
                         <td width="250px" style="overflow: hidden;word-wrap: break-word;font-size: 9pt;color: @listcolor(@item.Id)">
                             @extractserver(item.Email)
                         </td>
@@ -40,10 +40,10 @@
             </tbody>
             <tfoot class="footer">
                 <tr>
-                    <th width="250px" style="overflow: hidden"></th>
-                    <th width="250px"></th>
-                    <th width="150px" align="center"></th>
-                    <th width="250px"></th>
+                    <th width="333px" style="overflow: hidden"></th>
+                    <th width="333px"></th>
+                    <th width="334px"></th>
+
                 </tr>
                 <tr>
                     <th style="text-align: left;">Total Servers: @SelectedForDelete.Count()</th>

@@ -9,12 +9,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddHttpClient<IEmailServersServices, EmailServersServices>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7088/");
+    client.BaseAddress = new Uri("http://localhost:7090/");
 });
 
 
 var app = builder.Build();
-
+app.UsePathBase("/sandbox");
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
